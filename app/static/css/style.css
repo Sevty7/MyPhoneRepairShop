@@ -1,0 +1,33 @@
+/* MyPhoneRepairShop - Main Stylesheet */
+
+body {
+    background: #f0f2f5;
+    color: #212529;
+    font-family: Inter, Segoe UI, Roboto, Arial, Helvetica, sans-serif;
+}
+
+.card {
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+}
+
+.navbar {
+    background: linear-gradient(90deg, #0d6efd, #2b8cff);
+}
+
+.btn-primary {
+    background: #0d6efd;
+    border: none;
+}
+
+.table thead th {
+    background: transparent;
+}
+
+.nav-link.active {
+    font-weight: bold;
+    border-bottom: 3px solid #fff;
+    padding-bottom: 0.5rem !important;
+}

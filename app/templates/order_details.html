@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-3">
+  <a class="btn btn-secondary" href="{{ url_for('admin_bp.admin_orders') if session.role == 'admin' else url_for('main_bp.index') }}">← Назад</a>
+  <button onclick="window.print()" class="btn btn-primary float-end">Печать</button>
+  {% if session.role == 'client' and order.status == 'Принят' %}
+  <form method="POST" action="{{ url_for('main_bp.cancel_order', id=order.work_order_id) }}" style="display:inline;" onsubmit="return confirm('Отменить заказ? Это действие нельзя будет отменить.')">
+    <button type="submit" class="btn btn-outline-danger float-end ms-2">Отменить заказ</button>
+  </form>
+  {% endif %}
+</div>
+<div class="card p-4">
+  <div class="d-flex justify-content-between">
+    <div>
+      <h5>Квитанция №{{ order.work_order_id }}</h5>
+      <div class="text-muted">Сервисный центр MyPhoneRepairShop</div>
+    </div>
+    <div class="text-end">
+      <div>Дата приема: {{ order.received_date | date_fmt }}</div>
+      <div>Статус: 
+        {% if order.status == 'Принят' %}
+          <span class="badge bg-info">{{ order.status }}</span>
+        {% elif order.status == 'В ремонте' %}
+          <span class="badge bg-warning text-dark">{{ order.status }}</span>
+        {% elif order.status == 'Ожидает запчасти' %}
+          <span class="badge bg-danger">{{ order.status }}</span>
+        {% elif order.status == 'Готов к выдаче' %}
+          <span class="badge bg-success">{{ order.status }}</span>
+        {% elif order.status == 'Выдан' %}
+          <span class="badge bg-primary">{{ order.status }}</span>
+        {% elif order.status == 'Отменен' %}
+          <span class="badge bg-secondary">{{ order.status }}</span>
+        {% else %}
+          <span class="badge bg-dark">{{ order.status }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <hr>
+  <table class="table">
+    <thead><tr><th>Описание</th><th class="text-end">Стоимость</th></tr></thead>
+    <tbody>
+      <tr><td>Ремонт: {{ order.phone_model }}<br><small class="text-muted">{{ order.problem_description }}</small></td><td class="text-end">{{ order.work_cost | rubles }}</td></tr>
+      {% for part in order.parts %}
+      <tr><td>Запчасть: {{ part.name }}</td><td class="text-end">{{ part.price | rubles }}</td></tr>
+      {% endfor %}
+      <tr class="fw-bold"><td class="text-end">ИТОГО:</td><td class="text-end">{{ order.total_cost | rubles }}</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

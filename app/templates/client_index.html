@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3>Здравствуйте, {{ client.full_name }}</h3>
+  <div>
+    <a href="{{ url_for('main_bp.add_order') }}" class="btn btn-primary">Новый заказ</a>
+    <a href="{{ url_for('main_bp.profile') }}" class="btn btn-outline-secondary">Профиль</a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card p-3 mb-4">
+      <h5 class="mb-3">Ваши заказы</h5>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Дата</th>
+            <th>Модель</th>
+            <th>Статус</th>
+            <th class="text-end">Итого</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>{{ order.work_order_id }}</td>
+            <td>{{ order.received_date | date_fmt }}</td>
+            <td>{{ order.phone_model }}</td>
+            <td>
+              {% if order.status == 'Принят' %}
+                <span class="badge bg-info">{{ order.status }}</span>
+              {% elif order.status == 'В ремонте' %}
+                <span class="badge bg-warning text-dark">{{ order.status }}</span>
+              {% elif order.status == 'Ожидает запчасти' %}
+                <span class="badge bg-danger">{{ order.status }}</span>
+              {% elif order.status == 'Готов к выдаче' %}
+                <span class="badge bg-success">{{ order.status }}</span>
+              {% elif order.status == 'Выдан' %}
+                <span class="badge bg-primary">{{ order.status }}</span>
+              {% elif order.status == 'Отменен' %}
+                <span class="badge bg-secondary">{{ order.status }}</span>
+              {% else %}
+                <span class="badge bg-dark">{{ order.status }}</span>
+              {% endif %}
+            </td>
+            <td class="text-end">{{ order.total_cost | rubles }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main_bp.order_details', id=order.work_order_id) }}">
+                <i class="bi bi-eye"></i>
+              </a>
+              
+              {% if order.status == 'Принят' %}
+              <form method="POST" action="{{ url_for('main_bp.cancel_order', id=order.work_order_id) }}" style="display:inline;" onsubmit="return confirm('Отменить заказ? Это действие нельзя будет отменить.')">
+                <button type="submit" class="btn btn-sm btn-outline-secondary ms-2" title="Отменить заказ">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">У вас нет заказов</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card p-3">
+      <h6>Контакты сервиса</h6>
+      <p class="text-muted mb-0">Тел: +375 (25) 000-00-00</p>
+      <p class="text-muted">Адрес: г. Город, ул. Улица, 1</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

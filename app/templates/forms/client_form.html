@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h4 class="mb-4">{{ title }}</h4>
+      <form method="post">
+        <div class="mb-2">
+          <label class="form-label">Фамилия</label>
+          <input class="form-control" name="last_name" value="{{ client.last_name if client else '' }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Имя</label>
+          <input class="form-control" name="first_name" value="{{ client.first_name if client else '' }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Отчество</label>
+          <input class="form-control" name="middle_name" value="{{ client.middle_name if client else '' }}">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Телефон</label>
+          <input class="form-control" name="phone" value="{{ client.phone if client else '' }}" required>
+        </div>
+        <div class="mb-2">
+            <label class="form-label">Email</label>
+            <input class="form-control" name="email" type="email" value="{{ client.user.email if client and client.user else '' }}" placeholder="Введите email для создания аккаунта клиента">
+            {% if client and client.user %}
+                <small class="form-text text-muted">
+                  <i class="bi bi-info-circle"></i> Аккаунт клиента создан: <strong>{{ client.user.email }}</strong>. Пароль автоматически установлен на <code>password123</code>.
+                </small>
+            {% else %}
+                <small class="form-text text-muted">
+                  <i class="bi bi-info-circle"></i> Введите email чтобы создать аккаунт для этого клиента. Пароль будет автоматически установлен на <code>password123</code>.
+                </small>
+            {% endif %}
+        </div>
+        <div class="mb-2">
+            <label class="form-label">Роль пользователя</label>
+            <select class="form-select" name="role_id">
+                {% for role in roles %}
+                    <option value="{{ role.role_id }}" 
+                        {% if client.user and client.user.role_id == role.role_id %}selected
+                        {% elif not client.user and role.role_name == 'client' %}selected
+                        {% endif %}>
+                        
+                        {{ role.role_name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <small class="text-danger" style="font-size: 0.8rem;">
+                <i class="bi bi-exclamation-triangle"></i> Осторожно: Роль 'admin' дает полный доступ к системе.
+            </small>
+        </div>
+        <div class="d-grid mt-4">
+          <button class="btn btn-primary">{{ submit_text }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

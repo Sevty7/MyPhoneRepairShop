@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3><i class="bi bi-speedometer2"></i> Админ-панель</h3>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="h4 fw-bold text-primary mb-0">{{ total_clients }}</div>
+      <small class="text-muted">Клиентов</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="h4 fw-bold text-primary mb-0">{{ active_orders }}</div>
+      <small class="text-muted">Активные заказы</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="h4 fw-bold text-primary mb-0">{{ completed_orders }}</div>
+      <small class="text-muted">Выполнено</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="h4 fw-bold text-success mb-0">{{ revenue | rubles }}</div>
+      <small class="text-muted">Выручка</small>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card p-4 mb-4">
+      <h6><i class="bi bi-lightning"></i> Популярные запчасти</h6>
+      <ol class="list-group list-group-numbered mt-3">
+        {% for name, count in popular_parts %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div class="ms-2 me-auto">{{ name }}</div>
+          <span class="badge bg-primary rounded-pill">{{ count }}</span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">Нет данных</li>
+        {% endfor %}
+      </ol>
+    </div>
+    <div class="card p-4">
+      <h6><i class="bi bi-clock-history"></i> Последние заказы</h6>
+      <ul class="list-group mt-3">
+        {% for order in recent_orders %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold"><a href="{{ url_for('main_bp.order_details', id=order.work_order_id) }}" class="text-decoration-none">#{{ order.work_order_id }} {{ order.phone_model }}</a></div>
+            <small class="text-muted">{{ order.client.full_name }}</small>
+          </div>
+          <span class="badge bg-secondary">{{ order.status }}</span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">Нет заказов</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card p-4">
+      <h6><i class="bi bi-sliders"></i> Управление</h6>
+      <div class="list-group mt-3">
+        <a href="{{ url_for('admin_bp.admin_orders') }}" class="list-group-item list-group-item-action">Заказы</a>
+        <a href="{{ url_for('admin_bp.admin_parts') }}" class="list-group-item list-group-item-action">Склад</a>
+        <a href="{{ url_for('admin_bp.admin_supplies') }}" class="list-group-item list-group-item-action">Поставки</a>
+        <a href="{{ url_for('admin_bp.admin_suppliers') }}" class="list-group-item list-group-item-action">Поставщики</a>
+        <a href="{{ url_for('admin_bp.admin_clients') }}" class="list-group-item list-group-item-action">Клиенты</a>
+        <a href="{{ url_for('admin_bp.admin_users') }}" class="list-group-item list-group-item-action">Пользователи</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

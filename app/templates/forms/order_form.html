@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card p-4">
+      <h4 class="mb-4">{{ title }}</h4>
+      <form method="post">
+        {# --- Блок выбора клиента (Только для Админа) --- #}
+        {% if session.role == 'admin' %}
+        <div class="mb-3">
+          <label class="form-label">Клиент</label>
+          <select class="form-select" name="client_id" required>
+            <option value="">Выберите клиента</option>
+            {% for client in clients %}
+            <option value="{{ client.client_id }}" {% if order and order.client_id == client.client_id %}selected{% endif %}>
+              {{ client.full_name }} ({{ client.phone }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        
+        {# --- Общие поля (Видны всем) --- #}
+        <div class="mb-3">
+          <label class="form-label">Модель телефона</label>
+          <input class="form-control" name="phone_model" value="{{ order.phone_model if order else '' }}" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Описание проблемы</label>
+          <textarea class="form-control" name="problem_description" rows="3" required>{{ order.problem_description if order else '' }}</textarea>
+        </div>
+
+        {# --- Расширенные настройки (Только для Админа) --- #}
+        {% if session.role == 'admin' %}
+        
+        <div class="mb-3">
+          <label class="form-label">Стоимость работы (руб)</label>
+          <input class="form-control" name="work_cost" type="number" step="0.01" min="0" value="{{ order.work_cost if order else '0.00' }}" required>
+        </div>
+
+        <hr>
+        <h6>Параметры заказа (для администратора)</h6>
+        
+        <div class="mb-3">
+          <label class="form-label">Дата приема</label>
+          <input class="form-control" name="received_date" type="date" value="{{ order.received_date.strftime('%Y-%m-%d') if order else today }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Дата завершения</label>
+          <input class="form-control" name="completion_date" type="date" value="{{ order.completion_date.strftime('%Y-%m-%d') if order and order.completion_date else '' }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Статус</label>
+          <select class="form-select" name="status" required>
+            {% for status in statuses %}
+            <option value="{{ status }}" {% if order and order.status == status %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <hr>
+        <h6>Запчасти для заказа (Склад)</h6>
+        <div id="parts-container">
+          {% for part_in_order in order.parts if order %}
+          <div class="row mb-2 part-item align-items-center">
+            <div class="col-6">
+              {# Здесь оставлена логика авто-цены из прошлого шага (data-price) #}
+              <select class="form-select part-select" name="part_id[]" required>
+                {% for part in available_parts %}
+                <option value="{{ part.part_id }}" 
+                        data-price="{{ part.price }}" 
+                        {% if part.part_id == part_in_order.part_id %}selected{% endif %}>
+                  {{ part.name }} - {{ part.price | rubles }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-4">
+              <input type="number" class="form-control part-price" name="part_price[]" placeholder="Цена" step="0.01" min="0" value="{{ part_in_order.price }}">
+            </div>
+            <div class="col-2">
+              <button type="button" class="btn btn-sm btn-outline-danger remove-part-btn"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+          {% endfor %}
+          <div class="row mb-2 part-item align-items-center d-none" id="part-template">
+            <div class="col-6">
+              <select class="form-select part-select" name="part_id[]">
+                <option value="" data-price="0">Выберите запчасть</option>
+                {% for part in available_parts %}
+                <option value="{{ part.part_id }}" data-price="{{ part.price }}">
+                  {{ part.name }} - {{ part.price | rubles }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-4">
+              <input type="number" class="form-control part-price" name="part_price[]" placeholder="Цена" step="0.01" min="0">
+            </div>
+            <div class="col-2">
+              <button type="button" class="btn btn-sm btn-outline-danger remove-part-btn"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="add-part-btn"><i class="bi bi-plus-lg"></i> Добавить запчасть</button>
+
+        {% endif %} 
+
+        <div class="d-grid mt-4">
+          <button class="btn btn-primary">{{ submit_text }}</button>
+        </div>
+        
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

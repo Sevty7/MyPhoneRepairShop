@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h4 class="mb-4">{{ title }}</h4>
+      <form method="post">
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input class="form-control" name="email" type="email" value="{{ user.email if user else '' }}" required>
+          <small class="form-text text-muted">Уникальный адрес электронной почты для входа</small>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Роль</label>
+          <select class="form-select" name="role_id" required>
+            {% for role in roles %}
+            <option value="{{ role.role_id }}" {% if user and user.role_id == role.role_id %}selected{% endif %}>
+                {{ role.role_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3" id="client-select-container">
+          <label class="form-label">Привязать к клиенту</label>
+          <select class="form-select" name="client_id">
+            <option value="">Не привязывать</option>
+            {% for client in clients %}
+            <option value="{{ client.client_id }}" {% if user and user.client_id == client.client_id %}selected{% endif %}>
+              {{ client.full_name }} ({{ client.phone }})
+            </option>
+            {% endfor %}
+          </select>
+          <small class="form-text text-muted">Привяжите пользователя к профилю клиента</small>
+        </div>
+
+        {% if user %}
+        <div class="mb-3 p-3 bg-light rounded">
+          <small class="text-muted d-block mb-2">
+            <i class="bi bi-info-circle"></i> Дата создания: {{ user.created_at | date_fmt }}
+          </small>
+        </div>
+        {% endif %}
+
+        <div class="d-grid mt-4">
+          <button class="btn btn-primary">{{ submit_text }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

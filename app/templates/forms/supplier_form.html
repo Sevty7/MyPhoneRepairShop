@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h4 class="mb-4">{{ title }}</h4>
+      <form method="post">
+        <div class="mb-2">
+          <label class="form-label">Название поставщика / Компания</label>
+          <input class="form-control" name="name" value="{{ supplier.name if supplier else '' }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Контакты (телефон, email, адрес)</label>
+          <textarea class="form-control" name="contacts" rows="3" placeholder="Например: +375 29 123-45-67, info@supplier.com, ул. Ленина 10">{{ supplier.contacts if supplier else '' }}</textarea>
+        </div>
+        <div class="d-grid mt-4">
+          <button class="btn btn-primary">{{ submit_text }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

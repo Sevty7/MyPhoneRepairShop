@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card p-4">
+      <h4 class="mb-4">{{ title }}</h4>
+      <form method="post">
+        <div class="mb-3">
+          <label class="form-label">Поставщик</label>
+          <select class="form-select" name="supplier_id" required>
+            <option value="">Выберите поставщика</option>
+            {% for supplier in suppliers %}
+            <option value="{{ supplier.supplier_id }}" {% if supply and supply.supplier_id == supplier.supplier_id %}selected{% endif %}>
+              {{ supplier.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Дата поставки</label>
+          <input class="form-control" name="supply_date" type="date" value="{{ supply.supply_date.strftime('%Y-%m-%d') if supply else today }}" required>
+        </div>
+        
+        <hr>
+        <h6>Запчасти в поставке</h6>
+        <div id="supply-parts-container">
+          {% for part in supply.parts if supply %}
+          <div class="row mb-2 supply-item align-items-center">
+            <div class="col-6">
+              <input type="text" class="form-control" name="part_name[]" placeholder="Название запчасти" value="{{ part.name }}" required>
+            </div>
+            <div class="col-4">
+              <input type="number" class="form-control" name="part_price[]" placeholder="Цена (руб)" step="0.01" min="0" value="{{ part.price }}" required>
+            </div>
+            <div class="col-2">
+              <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+          {% endfor %}
+          <div class="row mb-2 supply-item align-items-center d-none" id="supply-item-template">
+            <div class="col-6">
+              <input type="text" class="form-control" name="part_name[]" placeholder="Название запчасти" required disabled>
+            </div>
+            <div class="col-4">
+              <input type="number" class="form-control" name="part_price[]" placeholder="Цена (руб)" step="0.01" min="0" required disabled>
+            </div>
+            <div class="col-2">
+              <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="add-supply-item-btn"><i class="bi bi-plus-lg"></i> Добавить запчасть</button>
+
+        <div class="d-grid mt-4">
+          <button class="btn btn-primary">{{ submit_text }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
