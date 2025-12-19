@@ -181,29 +181,41 @@ def manage_order(id=None):
     
     if request.method == 'POST':
         try:
+            # Проверка обязательных полей
             if not request.form.get('phone_model'):
                 flash('Модель телефона обязательна.', 'danger')
                 return redirect(request.url)
 
+            # Маппинг данных из формы в объект заказа
             order.client_id = int(request.form['client_id'])
             order.phone_model = request.form['phone_model']
             order.problem_description = request.form.get('problem_description', '')
             order.status = request.form.get('status', 'Принят')
             order.work_cost = Decimal(request.form.get('work_cost', '0.00'))
             order.received_date = datetime.strptime(request.form.get('received_date'), '%Y-%m-%d').date()
+            
+            # Обработка даты завершения (может быть пустой)
             completion_date_str = request.form.get('completion_date')
             order.completion_date = datetime.strptime(completion_date_str, '%Y-%m-%d').date() if completion_date_str else None
 
+            # Добавление нового объекта в сессию БД
             if not id:
                 db.session.add(order)
                 
-            current_parts = Part.query.filter_by(work_order_id=order.work_order_id).all()
-            for part in current_parts:
-                part.work_order_id = None
+            # Генерация ID заказа без фиксации транзакции
+            db.session.flush()
+            
+            # Если редактируем, временно возвращаем все запчасти заказа на склад
+            if id: 
+                current_parts = Part.query.filter_by(work_order_id=order.work_order_id).all()
+                for part in current_parts:
+                    part.work_order_id = None
                 
+            # Списки ID и цен запчастей из динамической формы
             part_ids = request.form.getlist('part_id[]')
             part_prices = request.form.getlist('part_price[]')
 
+            # Привязка выбранных запчастей к заказу с обновлением цены
             for p_id, p_price in zip(part_ids, part_prices):
                 if p_id and p_price:
                     part = Part.query.get(int(p_id))
@@ -211,23 +223,26 @@ def manage_order(id=None):
                         part.work_order_id = order.work_order_id
                         part.price = Decimal(p_price)
             
-            
+            # Финальное сохранение всех изменений одним блоком
             db.session.commit()
             
             flash(f'Заказ №{order.work_order_id} сохранен.', 'success')
             return redirect(url_for('admin_bp.admin_orders'))
         
         except Exception:
+            # Откат изменений при любой ошибке
             db.session.rollback()
             flash('Ошибка сохранения заказа. Проверьте форматы данных.', 'danger')
 
+    # Загрузка клиентов и доступных запчастей (склад + текущие в заказе)
     clients = Client.query.order_by(Client.last_name).all()
-    
+
     if id:
         available_parts = Part.query.filter(or_(Part.work_order_id.is_(None), Part.work_order_id == id)).all()
     else:
         available_parts = Part.query.filter(Part.work_order_id.is_(None)).all()
         
+    # Константы для отображения формы
     statuses = ['Принят', 'В ремонте', 'Ожидает запчасти', 'Готов к выдаче', 'Выдан', 'Отменен']
     title = "Новый заказ" if not id else f"Редактировать заказ №{order.work_order_id}"
     today = date.today().strftime('%Y-%m-%d')
