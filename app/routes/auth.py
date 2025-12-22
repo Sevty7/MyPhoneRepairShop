@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app import db
 from app.models import User, Client, Role
-from functools import wraps
 from app.decorators import login_required
 
 auth_bp = Blueprint('auth_bp', __name__)
@@ -9,8 +8,10 @@ auth_bp = Blueprint('auth_bp', __name__)
 
 @auth_bp.route('/register', methods=['GET', 'POST'], endpoint='register')
 def register():
+    
     if session.get('user_id'):
         return redirect(url_for('main_bp.index'))
+    
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
@@ -20,6 +21,7 @@ def register():
         if not all([email, password, last_name, first_name]):
             flash('Заполните обязательные поля.', 'danger')
             return render_template('auth/register.html')
+        
         if User.query.filter_by(email=email).first():
             flash('Пользователь с таким Email уже зарегистрирован.', 'danger')
             return render_template('auth/register.html')
@@ -32,8 +34,10 @@ def register():
             db.session.flush()
             
             client_role = Role.query.filter_by(role_name='client').first()
+            
             user = User(email=email, role_id=client_role.role_id, client_id=client.client_id)
             user.set_password(password)
+            
             db.session.add(user)
             db.session.commit()
             flash('Регистрация успешна! Войдите в систему.', 'success')
@@ -47,8 +51,10 @@ def register():
 
 @auth_bp.route('/login', methods=['GET', 'POST'], endpoint='login')
 def login():
+    
     if session.get('user_id'):
         return redirect(url_for('main_bp.index'))
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -61,8 +67,10 @@ def login():
             session['email'] = user.email
 
             flash(f'Добро пожаловать, {user.display_name}!', 'success')
+            
             if user.role == 'admin':
                 return redirect(url_for('admin_bp.admin_index'))
+            
             return redirect(url_for('main_bp.index'))
 
         flash('Неверный Email или Пароль.', 'danger')

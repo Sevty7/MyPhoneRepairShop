@@ -10,8 +10,10 @@ main_bp = Blueprint('main_bp', __name__)
 
 @main_bp.route('/', endpoint='index')
 def index():
+    
     if session.get('role') == 'admin':
         return redirect(url_for('admin_bp.admin_index'))
+    
     if session.get('client_id'):
         client = Client.query.get(session['client_id'])
         orders = client.orders.order_by(WorkOrder.received_date.desc()).all()

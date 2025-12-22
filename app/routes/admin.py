@@ -28,6 +28,7 @@ def admin_index():
         'completed_orders': WorkOrder.query.filter_by(status='Выдан').count(),
         'revenue': total_revenue,
     }
+    
     recent_orders = WorkOrder.query.order_by(WorkOrder.work_order_id.desc()).limit(5).all()
     popular_parts = db.session.query(Part.name, func.count(Part.part_id)).group_by(Part.name).order_by(desc(func.count(Part.part_id))).limit(5).all()
     return render_template('admin/admin_index.html', **stats, recent_orders=recent_orders, popular_parts=popular_parts)
@@ -117,21 +118,17 @@ def manage_client(id=None):
 def delete_client(id):
     client = Client.query.get_or_404(id)
     try:
-        # Проверяем есть ли активные заказы
         active_orders = client.orders.filter(WorkOrder.status != 'Отменен').count()
         if active_orders > 0:
             flash(f'Невозможно удалить клиента. У него есть {active_orders} активный заказ(ов). Сначала завершите или отмените заказы.', 'danger')
             return redirect(url_for('admin_bp.admin_clients'))
         
-        # Удаляем связанного пользователя если существует
         if client.user:
             db.session.delete(client.user)
         
-        # Удаляем все заказы (отменённые)
         for order in client.orders:
             db.session.delete(order)
         
-        # Удаляем клиента
         db.session.delete(client)
         db.session.commit()
         flash(f'Клиент "{client.full_name}" и все связанные данные удалены.', 'success')
@@ -429,14 +426,11 @@ def manage_supply(id=None):
                 for part in supply.parts.all():
                     db.session.delete(part)
             
-            # Сначала сохраняем саму поставку
             if not id:
                 db.session.add(supply)
             
-            # flush() отправляет данные в БД и получает ID для supply, 
             db.session.flush() 
             
-            # Теперь добавляем новые запчасти
             part_names = request.form.getlist('part_name[]')
             part_prices = request.form.getlist('part_price[]')
             
@@ -447,7 +441,7 @@ def manage_supply(id=None):
                             name=part_name.strip(),
                             price=Decimal(part_price),
                             supply_id=supply.supply_id,
-                            work_order_id=None  # Новые запчасти на складе
+                            work_order_id=None
                         )
                         db.session.add(new_part)
                     except (ValueError, TypeError):
