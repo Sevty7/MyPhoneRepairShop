@@ -36,7 +36,7 @@ class User(db.Model):
 
     @property
     def role(self):
-        """Возвращает строковое название роли для удобства и совместимости"""
+        #Возвращает строковое название роли
         if self.role_obj:
             return self.role_obj.role_name
         return None

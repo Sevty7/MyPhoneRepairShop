@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Config:
     SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:9000@localhost/myPhoneRepairShop'
